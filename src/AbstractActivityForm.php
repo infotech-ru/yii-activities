@@ -27,11 +27,20 @@ abstract class AbstractActivityForm extends CFormModel
         return $this->formMethod;
     }
 
+    /**
+     * Handle request if form is submitted
+     *
+     * @return bool form is submitted
+     */
     public function handleRequest()
     {
-        if ($this->isSubmitted()) {
+        $submitted = $this->isSubmitted();
+
+        if ($submitted) {
             $this->submit($GLOBALS['_' . $this->formMethod][$this->formName]);
         }
+
+        return $submitted;
     }
 
     public function isSubmitted()
