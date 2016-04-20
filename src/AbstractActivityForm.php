@@ -3,6 +3,9 @@
 namespace Infotech\YiiActivities;
 
 use CFormModel;
+use CUploadedFile;
+use CHtml;
+use CFileValidator;
 
 abstract class AbstractActivityForm extends CFormModel
 {
@@ -37,7 +40,16 @@ abstract class AbstractActivityForm extends CFormModel
         $submitted = $this->isSubmitted();
 
         if ($submitted) {
-            $this->submit($GLOBALS['_' . $this->formMethod][$this->formName]);
+            CHtml::setModelNameConverter(function () { return $this->getFormName(); });
+
+            $formData = $GLOBALS['_' . $this->formMethod][$this->formName];
+            foreach ($this->getFileAttributes() as $fileAttribute) {
+                $formData[$fileAttribute] = CUploadedFile::getInstance($this, $fileAttribute);
+            }
+
+            CHtml::setModelNameConverter(null);
+
+            $this->submit($formData);
         }
 
         return $submitted;
@@ -53,5 +65,23 @@ abstract class AbstractActivityForm extends CFormModel
     {
         $this->setAttributes($data);
         $this->validate(null, true);
+    }
+
+    public function getFileAttributes()
+    {
+        $fileAttributes = array();
+
+        foreach ($this->getValidators() as $validator) {
+            if ($validator instanceof CFileValidator) {
+                $fileAttributes = array_merge($fileAttributes, $validator->attributes);
+            }
+        }
+
+        return $fileAttributes;
+    }
+
+    public function hasFileAttributes()
+    {
+        return (boolean)$this->getFileAttributes();
     }
 }

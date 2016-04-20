@@ -64,14 +64,14 @@ class ActivityFormWidget extends CWidget
 
     public function init()
     {
-        $this->getActiveFormWidget()->init();
-    }
-
-    public function setForm(AbstractActivityForm $form)
-    {
-        $this->form = $form;
-        CHtml::setModelNameConverter(function () { return $this->form->getFormName(); });
-        $this->getActiveFormWidget()->method = strtolower($this->form->getFormMethod());
+        $activeFormWidget = $this->getActiveFormWidget();
+        if ($this->form->hasFileAttributes()) {
+            $activeFormWidget->htmlOptions = array_merge(
+                $activeFormWidget->htmlOptions,
+                array('enctype' => 'multipart/form-data')
+            );
+        }
+        $activeFormWidget->init();
     }
 
     public function run()
@@ -79,6 +79,13 @@ class ActivityFormWidget extends CWidget
         CHtml::setModelNameConverter(null);
 
         return $this->activeFormWidget->run();
+    }
+
+    public function setForm(AbstractActivityForm $form)
+    {
+        $this->form = $form;
+        CHtml::setModelNameConverter(function () { return $this->form->getFormName(); });
+        $this->getActiveFormWidget()->method = strtolower($this->form->getFormMethod());
     }
 
     public function __call($name, $parameters)
