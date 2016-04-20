@@ -64,15 +64,14 @@ class ActivityFormWidget extends CWidget
 
     public function init()
     {
-        $this->activeFormWidget = new $this->activeFormWidgetClass($this->getOwner());
-        CHtml::setModelNameConverter(function () { return $this->form->getFormName(); });
-        $this->activeFormWidget->method = strtolower($this->form->getFormMethod());
-        $this->activeFormWidget->init();
+        $this->getActiveFormWidget()->init();
     }
 
     public function setForm(AbstractActivityForm $form)
     {
         $this->form = $form;
+        CHtml::setModelNameConverter(function () { return $this->form->getFormName(); });
+        $this->getActiveFormWidget()->method = strtolower($this->form->getFormMethod());
     }
 
     public function run()
@@ -95,7 +94,7 @@ class ActivityFormWidget extends CWidget
             return $this->{'get' . $name}();
         }
 
-        return $this->activeFormWidget->$name;
+        return $this->getActiveFormWidget()->$name;
     }
 
     public function __set($name, $value)
@@ -103,7 +102,17 @@ class ActivityFormWidget extends CWidget
         if (method_exists($this, 'set' . $name)) {
             $this->{'set' . $name}($value);
         } else {
-            $this->activeFormWidget->$name = $value;
+            $this->getActiveFormWidget()->$name = $value;
         }
+    }
+
+
+    protected function getActiveFormWidget()
+    {
+        if (!isset($this->activeFormWidget)) {
+            $this->activeFormWidget = new $this->activeFormWidgetClass($this->getOwner());
+        }
+
+        return $this->activeFormWidget;
     }
 }
