@@ -85,7 +85,6 @@ class ActivityFormWidget extends CWidget
     {
         $this->form = $form;
         CHtml::setModelNameConverter(function () { return $this->form->getFormName(); });
-        $this->getActiveFormWidget()->method = strtolower($this->form->getFormMethod());
     }
 
     public function __call($name, $parameters)
@@ -117,7 +116,9 @@ class ActivityFormWidget extends CWidget
     protected function getActiveFormWidget()
     {
         if (!isset($this->activeFormWidget)) {
-            $this->activeFormWidget = new $this->activeFormWidgetClass($this->getOwner());
+            $className = \Yii::import($this->activeFormWidgetClass, true);
+            $this->activeFormWidget = new $className($this->getOwner());
+            $this->activeFormWidget->method = strtolower($this->form->getFormMethod());
         }
 
         return $this->activeFormWidget;
