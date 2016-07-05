@@ -62,6 +62,17 @@ class ActivityFormWidget extends CWidget
     /** @var AbstractActivityForm */
     private $form;
 
+    private $previousModelNameConvertor;
+
+    public function __construct($owner)
+    {
+        $modelNameConvertorProp = new \ReflectionProperty('CHtml', '_modelNameConverter');
+        $modelNameConvertorProp->setAccessible(true);
+        $this->previousModelNameConvertor = $modelNameConvertorProp->getValue();
+
+        parent::__construct($owner);
+    }
+
     public function init()
     {
         $activeFormWidget = $this->getActiveFormWidget();
@@ -76,7 +87,7 @@ class ActivityFormWidget extends CWidget
 
     public function run()
     {
-        CHtml::setModelNameConverter(null);
+        CHtml::setModelNameConverter($this->previousModelNameConvertor);
 
         return $this->activeFormWidget->run();
     }
